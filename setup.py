@@ -5,10 +5,10 @@ from setuptools import find_packages, setup
 setup(
     name="src",
     version="0.0.1",
-    description="Describe Your Cool Project",
-    author="",
-    author_email="",
-    url="https://github.com/user/project",
+    description="Apply Sharpness-Aware Minimization on RSNA challenge",
+    author="Hoang-Chau Luong",
+    author_email="lhchau20@apcs.fitus.edu.vn",
+    url="https://github.com/lhchau/rsna18-sam",
     install_requires=["lightning", "hydra-core"],
     packages=find_packages(),
     # use this to customize global commands available in the terminal after installing the package

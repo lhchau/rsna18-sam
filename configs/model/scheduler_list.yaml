@@ -1,0 +1,98 @@
+# 1. LAMBDA LR
+# lr = lr * Lambda(epoch)
+scheduler:
+  _target_: torch.optim.lr_scheduler.LambdaLR
+  _partial_: true
+  lr_lambda: lambda
+
+# 2. MultiplicativeLR
+# lr = lr * Lambda(epoch)
+scheduler:
+  _target_: torch.optim.lr_scheduler.LambdaLR
+  _partial_: true
+  lr_lambda: lambda
+
+# 3. StepLR
+# lr = Gamma * lr if epoch % step_size = 0
+#    else lr
+scheduler:
+  _target_: torch.optim.lr_scheduler.StepLR
+  _partial_: true
+  step_size: 10
+  gamma: 0.1
+
+# 4. ExponentialLR
+# lr = Gamma * lr
+scheduler:
+  _target_: torch.optim.lr_scheduler.ExponentialLR
+  _partial_: true
+  gamma: 0.1
+
+# 5. CosineAnnealingLR
+scheduler:
+  _target_: torch.optim.lr_scheduler.CosineAnnealingLR
+  _partial_: true
+  T_max: 200
+  eta_min: 0
+
+# 6. CyclicLR - triangular
+scheduler:
+  _target_: torch.optim.lr_scheduler.CyclicLR
+  _partial_: true
+  base_lr: 0.001
+  max_lr: 0.1
+  step_size_up: 5
+  mode: "triangular"
+
+# 7. CyclicLR - triangular2
+scheduler:
+  _target_: torch.optim.lr_scheduler.CyclicLR
+  _partial_: true
+  base_lr: 0.001
+  max_lr: 0.1
+  step_size_up: 5
+  mode: "triangular2"
+
+# 8. CyclicLR - exp_range
+scheduler:
+  _target_: torch.optim.lr_scheduler.CyclicLR
+  _partial_: true
+  base_lr: 0.001
+  max_lr: 0.1
+  step_size_up: 5
+  mode: "exp_range"
+  gamma: 0.85
+
+# 9. OneCycleLR - cos
+scheduler:
+  _target_: torch.optim.lr_scheduler.OneCycleLR
+  _partial_: true
+  max_lr: 0.1
+  steps_per_epoch: 10
+  epochs: 10
+
+# 10. OneCycleLR - linear
+scheduler:
+  _target_: torch.optim.lr_scheduler.OneCycleLR
+  _partial_: true
+  max_lr: 0.1
+  steps_per_epoch: 10
+  epochs: 10
+  anneal_strategy: "linear"
+
+# 11. CosineAnnealingWarmRestarts
+scheduler:
+  _target_: torch.optim.lr_scheduler.CosineAnnealingWarmRestarts
+  _partial_: true
+  T_0: 10
+  T_mult: 1 
+  eta_min: 0.001
+  last_epoch: -1
+
+# 12 ReduceLROnPlateau
+scheduler:
+  _target_: torch.optim.lr_scheduler.ReduceLROnPlateau
+  _partial_: true
+  mode: min
+  factor: 0.1
+  patience: 10
