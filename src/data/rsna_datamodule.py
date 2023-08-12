@@ -50,6 +50,7 @@ class RSNADataModule(LightningDataModule):
         self,
         data_dir: str = "data/",
         # train_val_test_split: Tuple[int, int, int] = (55_000, 5_000, 10_000),
+        train_val_test_split: Tuple[int, int] = (24015, 2669),
         batch_size: int = 64,
         num_workers: int = 0,
         pin_memory: bool = False,
@@ -117,16 +118,18 @@ class RSNADataModule(LightningDataModule):
         """
         # load and split datasets only if not loaded already
         if not self.data_train and not self.data_val and not self.data_test:
-            self.data_train = DatasetFolder(f"{self.data_dir}/processed/train/", loader=self.load_file, extensions="npy", transform=self.train_transforms)
-            self.data_val = DatasetFolder(f"{self.data_dir}/processed/val/", loader=self.load_file, extensions="npy", transform=self.val_transforms)
+            # self.data_train = DatasetFolder(f"{self.data_dir}/processed/train/", loader=self.load_file, extensions="npy", transform=self.train_transforms)
+            # self.data_val = DatasetFolder(f"{self.data_dir}/processed/val/", loader=self.load_file, extensions="npy", transform=self.val_transforms)
             # self.data_test = DatasetFolder(f"{self.data_dir}/processed/test/", loader=self.load_file, extensions="npy", transform=self.val_transforms)
 
-            # dataset = ConcatDataset(datasets=[trainset, testset])
-            # self.data_train, self.data_val, self.data_test = random_split(
-            #     dataset=dataset,
-            #     lengths=self.hparams.train_val_test_split,
-            #     generator=torch.Generator().manual_seed(42),
-            # )
+            trainset = DatasetFolder(f"{self.data_dir}/processed/train/", loader=self.load_file, extensions="npy", transform=self.train_transforms)
+            valset = DatasetFolder(f"{self.data_dir}/processed/val/", loader=self.load_file, extensions="npy", transform=self.train_transforms)
+            dataset = ConcatDataset(datasets=[trainset, valset])
+            self.data_train, self.data_val = random_split(
+                dataset=dataset,
+                lengths=self.hparams.train_val_test_split,
+                generator=torch.Generator().manual_seed(42),
+            )
 
     def train_dataloader(self) -> DataLoader[Any]:
         """Create and return the train dataloader.

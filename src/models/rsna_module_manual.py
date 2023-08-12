@@ -164,8 +164,6 @@ class RSNALitModule(LightningModule):
             labels.
         :param batch_idx: The index of the current batch.
         """
-        sch = self.lr_schedulers()
-        
         loss, preds, targets = self.model_step(batch)
 
         # update and log metrics
@@ -174,10 +172,6 @@ class RSNALitModule(LightningModule):
         self.log("val/loss", self.val_loss, on_step=False, on_epoch=True, prog_bar=True)
         self.log("val/acc", self.val_acc, on_step=False, on_epoch=True, prog_bar=True)
 
-        # If the selected scheduler is a ReduceLROnPlateau scheduler.
-        if isinstance(sch, torch.optim.lr_scheduler.ReduceLROnPlateau):
-            sch.step(self.val_loss(loss))
-
     def on_validation_epoch_end(self) -> None:
         "Lightning hook that is called when a validation epoch ends."
         acc = self.val_acc.compute()  # get current val acc
@@ -185,6 +179,11 @@ class RSNALitModule(LightningModule):
         # log `val_acc_best` as a value through `.compute()` method, instead of as a metric object
         # otherwise metric would be reset by lightning after each epoch
         self.log("val/acc_best", self.val_acc_best.compute(), sync_dist=True, prog_bar=True)
+        
+        sch = self.lr_schedulers()
+        # If the selected scheduler is a ReduceLROnPlateau scheduler.
+        if isinstance(sch, torch.optim.lr_scheduler.ReduceLROnPlateau):
+            sch.step(self.val_loss(self.val_loss.compute()))
 
     def test_step(self, batch: Tuple[torch.Tensor, torch.Tensor], batch_idx: int) -> None:
         """Perform a single test step on a batch of data from the test set.
@@ -232,6 +231,9 @@ class RSNALitModule(LightningModule):
     def get_lr(self, optimizer):
         for param_group in optimizer.param_groups:
             return param_group["lr"]
+        
+    def test_model_step(self, batch):
+        pass
 
 
 if __name__ == "__main__":
