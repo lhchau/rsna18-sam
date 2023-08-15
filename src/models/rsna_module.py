@@ -1,6 +1,7 @@
 from typing import Any, Dict, Tuple
 
 import torch
+import torchmetrics
 from lightning import LightningModule
 from torchmetrics import MaxMetric, MeanMetric
 from torchmetrics.classification.accuracy import Accuracy
@@ -66,7 +67,9 @@ class RSNALitModule(LightningModule):
         self.train_acc = Accuracy(task="binary")
         self.val_acc = Accuracy(task="binary")
         self.test_acc = Accuracy(task="binary")
-
+        self.val_pre = torchmetrics.Precision(task="binary")
+        self.val_rec = torchmetrics.Recall(task="binary")
+        self.val_cm = torchmetrics.ConfusionMatrix(task="binary", num_classes=2)
 
         # for averaging loss across batches
         self.train_loss = MeanMetric()
@@ -91,6 +94,9 @@ class RSNALitModule(LightningModule):
         self.val_loss.reset()
         self.val_acc.reset()
         self.val_acc_best.reset()
+        self.val_pre.reset()
+        self.val_rec.reset()
+        self.val_cm.reset()
 
     def model_step(
         self, batch: Tuple[torch.Tensor, torch.Tensor]
@@ -154,6 +160,13 @@ class RSNALitModule(LightningModule):
         self.val_acc(preds, targets)
         self.log("val/loss", self.val_loss, on_step=False, on_epoch=True, prog_bar=True)
         self.log("val/acc", self.val_acc, on_step=False, on_epoch=True, prog_bar=True)
+        
+        self.val_pre(preds, targets)
+        self.val_rec(preds, targets)
+        self.val_cm(preds, targets)
+        self.log("val/pre", self.val_pre, on_step=False, on_epoch=True, prog_bar=True)
+        self.log("val/rec", self.val_rec, on_step=False, on_epoch=True, prog_bar=True)
+        self.log("val/cm", self.val_cm, on_step=False, on_epoch=True, prog_bar=True)
 
     def on_validation_epoch_end(self) -> None:
         "Lightning hook that is called when a validation epoch ends."
