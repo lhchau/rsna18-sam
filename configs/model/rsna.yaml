@@ -16,5 +16,6 @@ scheduler:
   patience: 5
 
 net:
-  _target_: src.models.components.wide_resnet.WideResNet
+  _target_: src.models.components.resnet.ResNet18
   num_classes: 1
+  in_channels: 1
