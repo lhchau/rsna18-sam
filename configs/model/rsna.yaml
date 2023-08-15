@@ -12,9 +12,9 @@ scheduler:
   _target_: torch.optim.lr_scheduler.ReduceLROnPlateau
   _partial_: true
   mode: min
-  factor: 0.05
-  patience: 2
+  factor: 0.1
+  patience: 5
 
 net:
-  _target_: src.models.components.resnet18.ResNet18
+  _target_: src.models.components.wide_resnet.WideResNet
   num_classes: 1
