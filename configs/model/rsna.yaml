@@ -1,19 +1,17 @@
-_target_: src.models.rsna_module_manual.RSNALitModule
+_target_: src.models.rsna_module.RSNALitModule
 
 optimizer:
-  _target_: src.optimizer.sam.SAM
+  _target_: torch.optim.SGD
   _partial_: true
-  rho: 0.5
   lr: 0.1
   weight_decay: 0.0005
   momentum: 0.9
 
 scheduler:
-  _target_: torch.optim.lr_scheduler.ReduceLROnPlateau
+  _target_: torch.optim.lr_scheduler.CosineAnnealingLR
   _partial_: true
-  mode: min
-  factor: 0.1
-  patience: 5
+  T_max: 200
+  eta_min: 0
 
 net:
   _target_: src.models.components.resnet.ResNet18

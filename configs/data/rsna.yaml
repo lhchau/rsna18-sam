@@ -1,7 +1,7 @@
 _target_: src.data.rsna_datamodule.RSNADataModule
 data_dir: ${paths.data_dir}
-batch_size: 16
+batch_size: 256
 # train_val_test_split: [55_000, 5_000, 10_000]
-train_val_test_split: [24015, 2669]
-num_workers: 8
+train_val_test_split: [8005, 18679]
+num_workers: 32
 pin_memory: False

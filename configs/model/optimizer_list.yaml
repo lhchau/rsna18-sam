@@ -2,7 +2,7 @@
 optimizer:
   _target_: torch.optim.SGD
   _partial_: true
-  lr: 0.01
+  lr: 0.1
   weight_decay: 0.0005
   momentum: 0.9
 
@@ -11,6 +11,6 @@ optimizer:
   _target_: src.optimizer.sam.SAM
   _partial_: true
   rho: 0.05
-  lr: 0.01
+  lr: 0.1
   weight_decay: 0.0005
   momentum: 0.9
