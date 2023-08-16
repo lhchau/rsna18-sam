@@ -70,9 +70,8 @@ class RSNALitModule(LightningModule):
         self.train_acc = Accuracy(task="binary")
         self.val_acc = Accuracy(task="binary")
         self.test_acc = Accuracy(task="binary")
-        # self.val_pre = torchmetrics.Precision(task="binary")
-        # self.val_rec = torchmetrics.Recall(task="binary")
-        # self.val_cm = torchmetrics.ConfusionMatrix(task="binary", num_classes=2)
+        self.val_pre = torchmetrics.Precision(task="binary")
+        self.val_rec = torchmetrics.Recall(task="binary")
 
         # for averaging loss across batches
         self.train_loss = MeanMetric()
@@ -97,9 +96,8 @@ class RSNALitModule(LightningModule):
         self.val_loss.reset()
         self.val_acc.reset()
         self.val_acc_best.reset()
-        # self.val_pre.reset()
-        # self.val_rec.reset()
-        # self.val_cm.reset()
+        self.val_pre.reset()
+        self.val_rec.reset()
 
     def model_step(
         self, batch: Tuple[torch.Tensor, torch.Tensor]
@@ -172,12 +170,14 @@ class RSNALitModule(LightningModule):
         self.log("val/loss", self.val_loss, on_step=False, on_epoch=True, prog_bar=True)
         self.log("val/acc", self.val_acc, on_step=False, on_epoch=True, prog_bar=True)
 
-        # self.val_pre(preds, targets)
-        # self.val_rec(preds, targets)
-        # self.val_cm(preds, targets)
-        # self.log("val/pre", self.val_pre, on_step=False, on_epoch=True, prog_bar=True)
-        # self.log("val/rec", self.val_rec, on_step=False, on_epoch=True, prog_bar=True)
-        # self.log("val/cm", self.val_cm, on_step=False, on_epoch=True, prog_bar=True)
+        self.val_pre(preds, targets)
+        self.val_rec(preds, targets)
+        self.log("val/pre", self.val_pre, on_step=False, on_epoch=True, prog_bar=True)
+        self.log("val/rec", self.val_rec, on_step=False, on_epoch=True, prog_bar=True)
+        
+        sch = self.lr_schedulers()
+        if isinstance(sch, torch.optim.lr_scheduler.CosineAnnealingLR):
+            sch.step()
 
     def on_validation_epoch_end(self) -> None:
         "Lightning hook that is called when a validation epoch ends."
@@ -190,10 +190,10 @@ class RSNALitModule(LightningModule):
         sch = self.lr_schedulers()
         
         # If the selected scheduler is a ReduceLROnPlateau scheduler.
-        if isinstance(sch, torch.optim.lr_scheduler.ReduceLROnPlateau):
-            sch.step(self.val_loss.compute())
-        else:
-            sch.step()
+        # if isinstance(sch, torch.optim.lr_scheduler.ReduceLROnPlateau):
+        #     sch.step(self.val_loss.compute())
+        # else:
+        #     sch.step()
 
     def test_step(self, batch: Tuple[torch.Tensor, torch.Tensor], batch_idx: int) -> None:
         """Perform a single test step on a batch of data from the test set.

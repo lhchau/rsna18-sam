@@ -7,7 +7,7 @@ from torch.utils.data import ConcatDataset, DataLoader, Dataset, random_split
 from torchvision.transforms import transforms
 from torchvision.datasets import DatasetFolder
 
-from src.data.components.cutout import Cutout
+# from src.data.components.cutout import Cutout
 
 
 class RSNADataModule(LightningDataModule):
@@ -76,8 +76,8 @@ class RSNADataModule(LightningDataModule):
             transforms.ToTensor(),
             transforms.Normalize(0.49, 0.248),
             transforms.RandomAffine(degrees=(-5, 5), translate=(0, 0.05), scale=(0.9, 1.1)),
-            transforms.RandomResizedCrop((224, 224), scale=(0.35, 1)),
-            Cutout()
+            transforms.RandomResizedCrop((224, 224), scale=(0.35, 1), antialias=True),
+            # Cutout()
         ])
         
         self.val_transforms = transforms.Compose([
