@@ -126,7 +126,7 @@ class RSNADataModule(LightningDataModule):
             # self.data_test = DatasetFolder(f"{self.data_dir}/processed/test/", loader=self.load_file, extensions="npy", transform=self.val_transforms)
 
             trainset = DatasetFolder(f"{self.data_dir}/processed/train/", loader=self.load_file, extensions="npy", transform=self.train_transforms)
-            valset = DatasetFolder(f"{self.data_dir}/processed/val/", loader=self.load_file, extensions="npy", transform=self.train_transforms)
+            valset = DatasetFolder(f"{self.data_dir}/processed/val/", loader=self.load_file, extensions="npy", transform=self.val_transforms)
             dataset = ConcatDataset(datasets=[trainset, valset])
             self.data_train, self.data_val = random_split(
                 dataset=dataset,
