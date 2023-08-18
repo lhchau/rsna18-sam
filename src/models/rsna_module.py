@@ -70,6 +70,7 @@ class RSNALitModule(LightningModule):
         self.val_pre = torchmetrics.Precision(task="binary")
         self.val_rec = torchmetrics.Recall(task="binary")
         self.val_f1 = torchmetrics.F1Score(task="binary")
+        self.val_auroc = torchmetrics.AUROC(task="binary")
 
         # for averaging loss across batches
         self.train_loss = MeanMetric()
@@ -97,6 +98,7 @@ class RSNALitModule(LightningModule):
         self.val_pre.reset()
         self.val_rec.reset()
         self.val_f1.reset()
+        self.val_auroc.reset()
 
     def model_step(
         self, batch: Tuple[torch.Tensor, torch.Tensor]
@@ -164,9 +166,11 @@ class RSNALitModule(LightningModule):
         self.val_pre(preds, targets)
         self.val_rec(preds, targets)
         self.val_f1(preds, targets)
+        self.val_auroc(preds, targets)
         self.log("val/pre", self.val_pre, on_step=False, on_epoch=True, prog_bar=True)
         self.log("val/rec", self.val_rec, on_step=False, on_epoch=True, prog_bar=True)
         self.log("val/f1", self.val_f1, on_step=False, on_epoch=True, prog_bar=True)
+        self.log("val/auroc", self.val_auroc, on_step=False, on_epoch=True, prog_bar=True)
 
     def on_validation_epoch_end(self) -> None:
         "Lightning hook that is called when a validation epoch ends."
