@@ -8,12 +8,13 @@ optimizer:
   momentum: 0.9
 
 scheduler:
-  _target_: torch.optim.lr_scheduler.CosineAnnealingLR
+  _target_: torch.optim.lr_scheduler.ReduceLROnPlateau
   _partial_: true
-  T_max: 200
-  eta_min: 0
+  mode: min
+  factor: 0.2
+  patience: 5
 
 net:
   _target_: src.models.components.resnet.ResNet18
-  num_classes: 1
+  num_classes: 2
   in_channels: 1

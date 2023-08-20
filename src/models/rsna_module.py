@@ -1,10 +1,13 @@
 from typing import Any, Dict, Tuple
 
+import numpy as np
 import torch
 import torchmetrics
 from lightning import LightningModule
 from torchmetrics import MaxMetric, MeanMetric
 from torchmetrics.classification.accuracy import Accuracy
+
+from src.criterion.losses import LDAMLoss
 
 
 class RSNALitModule(LightningModule):
@@ -59,18 +62,18 @@ class RSNALitModule(LightningModule):
         self.save_hyperparameters(logger=False)
 
         self.net = net
-
+        
         # loss function
-        self.criterion = torch.nn.BCEWithLogitsLoss(pos_weight=torch.tensor([3]))
+        self.criterion = self.get_criterion()
 
         # metric objects for calculating and averaging accuracy across batches
         self.train_acc = Accuracy(task="binary")
         self.val_acc = Accuracy(task="binary")
         self.test_acc = Accuracy(task="binary")
-        self.val_pre = torchmetrics.Precision(task="binary")
-        self.val_rec = torchmetrics.Recall(task="binary")
         self.val_f1 = torchmetrics.F1Score(task="binary")
         self.val_auroc = torchmetrics.AUROC(task="binary")
+        self.val_acc_baseline = Accuracy(task="binary")
+        self.test_acc_baseline = Accuracy(task="binary")
 
         # for averaging loss across batches
         self.train_loss = MeanMetric()
@@ -95,10 +98,10 @@ class RSNALitModule(LightningModule):
         self.val_loss.reset()
         self.val_acc.reset()
         self.val_acc_best.reset()
-        self.val_pre.reset()
-        self.val_rec.reset()
         self.val_f1.reset()
         self.val_auroc.reset()
+        self.val_acc_baseline.reset()
+
 
     def model_step(
         self, batch: Tuple[torch.Tensor, torch.Tensor]
@@ -113,10 +116,10 @@ class RSNALitModule(LightningModule):
             - A tensor of target labels.
         """
         x, y = batch
-        y = y.float()
+        # y = y.float()
         logits = self.forward(x)
         loss = self.criterion(logits, y)
-        preds = torch.where(logits > 0.5, 1, 0)
+        preds = torch.argmax(logits, dim=1)
         return loss, preds, y
 
     def training_step(
@@ -140,7 +143,6 @@ class RSNALitModule(LightningModule):
         self.log("train/acc", self.train_acc, on_step=False, on_epoch=True, prog_bar=True)
         self.log("learning rate", self.get_lr(optimizer), on_step=True, on_epoch=False, prog_bar=False)
 
-
         # return loss or backpropagation will fail
         return loss
 
@@ -156,21 +158,17 @@ class RSNALitModule(LightningModule):
         :param batch_idx: The index of the current batch.
         """
         loss, preds, targets = self.model_step(batch)
-
         # update and log metrics
         self.val_loss(loss)
         self.val_acc(preds, targets)
-        self.log("val/loss", self.val_loss, on_step=False, on_epoch=True, prog_bar=True)
-        self.log("val/acc", self.val_acc, on_step=False, on_epoch=True, prog_bar=True)
-        
-        self.val_pre(preds, targets)
-        self.val_rec(preds, targets)
         self.val_f1(preds, targets)
         self.val_auroc(preds, targets)
-        self.log("val/pre", self.val_pre, on_step=False, on_epoch=True, prog_bar=True)
-        self.log("val/rec", self.val_rec, on_step=False, on_epoch=True, prog_bar=True)
+        self.val_acc_baseline(torch.zeros_like(preds), targets)
+        self.log("val/loss", self.val_loss, on_step=False, on_epoch=True, prog_bar=True)
+        self.log("val/acc", self.val_acc, on_step=False, on_epoch=True, prog_bar=True)
         self.log("val/f1", self.val_f1, on_step=False, on_epoch=True, prog_bar=True)
         self.log("val/auroc", self.val_auroc, on_step=False, on_epoch=True, prog_bar=True)
+        self.log("val/acc_base", self.val_acc_baseline, on_step=False, on_epoch=True, prog_bar=True)
 
     def on_validation_epoch_end(self) -> None:
         "Lightning hook that is called when a validation epoch ends."
@@ -192,8 +190,10 @@ class RSNALitModule(LightningModule):
         # update and log metrics
         self.test_loss(loss)
         self.test_acc(preds, targets)
+        self.test_acc_baseline(torch.zeros_like(preds), targets)
         self.log("test/loss", self.test_loss, on_step=False, on_epoch=True, prog_bar=True)
         self.log("test/acc", self.test_acc, on_step=False, on_epoch=True, prog_bar=True)
+        self.log("test/acc_base", self.test_acc_baseline, on_step=False, on_epoch=True)
 
     def on_test_epoch_end(self) -> None:
         """Lightning hook that is called when a test epoch ends."""
@@ -226,6 +226,20 @@ class RSNALitModule(LightningModule):
     def get_lr(self, optimizer):
         for param_group in optimizer.param_groups:
             return param_group["lr"]
+        
+    def get_criterion(self):
+        beta = 0.9999
+        cls_num_list = [20672, 6012]
+        
+        effective_num = 1.0 - np.power(beta, cls_num_list)
+        per_cls_weights = (1.0 - beta) / np.array(effective_num)
+        per_cls_weights = per_cls_weights / np.sum(per_cls_weights) * len(cls_num_list)
+        per_cls_weights = torch.FloatTensor(per_cls_weights).cuda()
+        
+        criterion = LDAMLoss(cls_num_list=cls_num_list, max_m=0.5, s=3, weight=per_cls_weights).cuda()
+        
+        return criterion
+    
 
 
 if __name__ == "__main__":

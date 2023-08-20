@@ -7,7 +7,7 @@ wandb:
   offline: False
   id: null # pass correct id to resume experiment!
   anonymous: null # enable anonymous logging
-  project: "rsna18-sam 30-70"
+  project: "restnet50-rsna18-sam 80-20"
   log_model: False # upload lightning ckpts
   prefix: "" # a string to put at the beginning of metric keys
   entity: "lhchau" # set to name of your wandb team

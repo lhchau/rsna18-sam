@@ -1,5 +1,7 @@
 # Experiment 
 
+26684 images which 2 classes with 20672 ~ 77% and 6012 ~ 23% respectively
+
 ## Hyperparameter setting
 
 Model: ResNet18, ResNet50, ResNet101, Wide ResNet-28-10
@@ -40,3 +42,5 @@ advanced data augmentation: cutout regularization, RandAugment and AutoAugment
 ## Experimental Observation
 
 - During the first half of the training, discarding the second order terms does not impact the general direction of the training, as the cosine similarity between the first and second order updates are very close to 1. However, when the model nears convergence, the similarity between both types of updates becomes weaker
+
+## Escape saddle point

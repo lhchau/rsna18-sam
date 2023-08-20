@@ -1,0 +1,21 @@
+_target_: src.models.rsna_module_manual.RSNALitModule
+
+optimizer:
+  _target_: src.optimizer.sam.SAM
+  _partial_: true
+  rho: 0.05
+  lr: 0.1
+  weight_decay: 0.0005
+  momentum: 0.9
+
+scheduler:
+  _target_: torch.optim.lr_scheduler.ReduceLROnPlateau
+  _partial_: true
+  mode: min
+  factor: 0.2
+  patience: 5
+
+net:
+  _target_: src.models.components.resnet.ResNet18
+  num_classes: 2
+  in_channels: 1

@@ -52,7 +52,7 @@ class RSNADataModule(LightningDataModule):
         self,
         data_dir: str = "data/",
         # train_val_test_split: Tuple[int, int, int] = (55_000, 5_000, 10_000),
-        train_val_test_split: Tuple[int, int] = (24015, 2669),
+        train_val_test_split: Tuple[float, float, float] = (0.7, 0.2, 0.1),
         batch_size: int = 64,
         num_workers: int = 0,
         pin_memory: bool = False,
@@ -121,14 +121,10 @@ class RSNADataModule(LightningDataModule):
         """
         # load and split datasets only if not loaded already
         if not self.data_train and not self.data_val and not self.data_test:
-            # self.data_train = DatasetFolder(f"{self.data_dir}/processed/train/", loader=self.load_file, extensions="npy", transform=self.train_transforms)
-            # self.data_val = DatasetFolder(f"{self.data_dir}/processed/val/", loader=self.load_file, extensions="npy", transform=self.val_transforms)
-            # self.data_test = DatasetFolder(f"{self.data_dir}/processed/test/", loader=self.load_file, extensions="npy", transform=self.val_transforms)
-
             trainset = DatasetFolder(f"{self.data_dir}/processed/train/", loader=self.load_file, extensions="npy", transform=self.train_transforms)
             valset = DatasetFolder(f"{self.data_dir}/processed/val/", loader=self.load_file, extensions="npy", transform=self.val_transforms)
             dataset = ConcatDataset(datasets=[trainset, valset])
-            self.data_train, self.data_val = random_split(
+            self.data_train, self.data_val, self.data_test = random_split(
                 dataset=dataset,
                 lengths=self.hparams.train_val_test_split,
                 generator=torch.Generator().manual_seed(42),
@@ -160,18 +156,18 @@ class RSNADataModule(LightningDataModule):
             shuffle=False,
         )
 
-    # def test_dataloader(self) -> DataLoader[Any]:
-    #     """Create and return the test dataloader.
+    def test_dataloader(self) -> DataLoader[Any]:
+        """Create and return the test dataloader.
 
-    #     :return: The test dataloader.
-    #     """
-    #     return DataLoader(
-    #         dataset=self.data_test,
-    #         batch_size=self.hparams.batch_size,
-    #         num_workers=self.hparams.num_workers,
-    #         pin_memory=self.hparams.pin_memory,
-    #         shuffle=False,
-    #     )
+        :return: The test dataloader.
+        """
+        return DataLoader(
+            dataset=self.data_test,
+            batch_size=self.hparams.batch_size,
+            num_workers=self.hparams.num_workers,
+            pin_memory=self.hparams.pin_memory,
+            shuffle=False,
+        )
 
     def teardown(self, stage: Optional[str] = None) -> None:
         """Lightning hook for cleaning up after `trainer.fit()`, `trainer.validate()`,
@@ -199,6 +195,17 @@ class RSNADataModule(LightningDataModule):
     
     def load_file(self, path):
         return np.load(path).astype(np.float32)
+    
+    def get_cls_num_list(self, dataloader):
+        class_counts = [0] * 2
+        for batch_data, batch_labels in dataloader:
+            for label in batch_labels:
+                if label.item() in class_counts:
+                    class_counts[label.item()] += 1
+                else:
+                    class_counts[label.item()] = 1
+        return class_counts
+
 
 
 if __name__ == "__main__":
