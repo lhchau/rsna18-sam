@@ -9,13 +9,8 @@ optimizer:
   momentum: 0.9
 
 scheduler:
-  # _target_: torch.optim.lr_scheduler.ReduceLROnPlateau
-  # _partial_: true
-  # mode: min
-  # factor: 0.1
-  # patience: 20
 
 net:
-  _target_: src.models.components.resnet.ResNet34
+  _target_: src.models.components.resnet.ResNet18
   num_classes: 2
   in_channels: 1

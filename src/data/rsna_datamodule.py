@@ -75,9 +75,9 @@ class RSNADataModule(LightningDataModule):
         self.train_transforms = transforms.Compose([
             transforms.ToTensor(),
             transforms.Normalize(0.49, 0.248),
-            transforms.RandomAffine(degrees=(-5, 5), translate=(0, 0.05), scale=(0.9, 1.1)),
-            transforms.RandomResizedCrop((224, 224), scale=(0.35, 1), antialias=True),
-            Cutout()
+            # transforms.RandomAffine(degrees=(-5, 5), translate=(0, 0.05), scale=(0.9, 1.1)),
+            # transforms.RandomResizedCrop((224, 224), scale=(0.35, 1), antialias=True),
+            # Cutout()
         ])
         
         self.val_transforms = transforms.Compose([
@@ -95,9 +95,9 @@ class RSNADataModule(LightningDataModule):
     def num_classes(self) -> int:
         """Get the number of classes.
 
-        :return: The number of MNIST classes (10).
+        :return: The number of RSNA classes (10).
         """
-        return 10
+        return 2
 
     def prepare_data(self) -> None:
         """Download data if needed. Lightning ensures that `self.prepare_data()` is called only
@@ -195,17 +195,6 @@ class RSNADataModule(LightningDataModule):
     
     def load_file(self, path):
         return np.load(path).astype(np.float32)
-    
-    def get_cls_num_list(self, dataloader):
-        class_counts = [0] * 2
-        for batch_data, batch_labels in dataloader:
-            for label in batch_labels:
-                if label.item() in class_counts:
-                    class_counts[label.item()] += 1
-                else:
-                    class_counts[label.item()] = 1
-        return class_counts
-
 
 
 if __name__ == "__main__":

@@ -1,0 +1,29 @@
+# @package _global_
+
+# to execute this experiment run:
+# python train.py experiment=example
+
+defaults:
+  - override /data: rsna
+  - override /model: rsna_sgd
+  - override /callbacks: default
+  - override /trainer: gpu
+  - override /logger: wandb
+
+# all parameters below will be merged with parameters from default configurations set above
+# this allows you to overwrite only specified parameters
+
+seed: 42
+
+trainer:
+  min_epochs: 600
+  max_epochs: 600
+
+data:
+  batch_size: 128
+  train_val_test_split: [0.6, 0.1, 0.3]
+
+logger:
+  wandb:
+    project: "restnet34-rsna18-sam 613"
+

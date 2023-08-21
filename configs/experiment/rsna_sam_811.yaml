@@ -16,20 +16,14 @@ defaults:
 seed: 42
 
 trainer:
-  min_epochs: 400
+  min_epochs: 600
   max_epochs: 600
-  # gradient_clip_val: 0.5
 
-# data:
-#   batch_size: 64
+data:
+  batch_size: 128
+  train_val_test_split: [0.8, 0.1, 0.1]
 
-# logger:
-#   wandb:
-#     tags: ${tags}
-#     group: "mnist"
-#   aim:
-#     experiment: "mnist"
 logger:
   wandb:
-    project: "restnet34-rsna18-sam 0.7-0.2-0.1"
+    project: "restnet18-rsna18-sam 811"
 

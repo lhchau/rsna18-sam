@@ -5,7 +5,7 @@
 
 defaults:
   - override /data: rsna
-  - override /model: rsna_sgd
+  - override /model: rsna_sam
   - override /callbacks: default
   - override /trainer: gpu
   - override /logger: wandb
@@ -16,27 +16,14 @@ defaults:
 seed: 42
 
 trainer:
-  min_epochs: 400
+  min_epochs: 600
   max_epochs: 600
 
-# model:
-#   optimizer:
-#     lr: 0.002
-#   net:
-#     lin1_size: 128
-#     lin2_size: 256
-#     lin3_size: 64
+data:
+  batch_size: 128
+  train_val_test_split: [0.4, 0.1, 0.5]
 
-# data:
-#   batch_size: 64
-
-# logger:
-#   wandb:
-#     tags: ${tags}
-#     group: "mnist"
-#   aim:
-#     experiment: "mnist"
 logger:
   wandb:
-    project: "restnet34-rsna18-sam 0.7-0.2-0.1"
+    project: "restnet18-rsna18-sam 415"
 
