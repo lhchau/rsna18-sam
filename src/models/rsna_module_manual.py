@@ -259,7 +259,7 @@ class RSNALitModule(LightningModule):
         per_cls_weights = per_cls_weights / np.sum(per_cls_weights) * len(cls_num_list)
         per_cls_weights = torch.FloatTensor(per_cls_weights).cuda()
         
-        criterion = LDAMLoss(cls_num_list=cls_num_list, max_m=0.5, s=3, weight=per_cls_weights).cuda()
+        criterion = LDAMLoss(cls_num_list=cls_num_list, max_m=0.5, s=30, weight=per_cls_weights).cuda()
         
         return criterion
 
